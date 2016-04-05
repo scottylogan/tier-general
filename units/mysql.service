@@ -1,0 +1,23 @@
+[Unit]
+Description=MySQL Server for Shiny Dev Box
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=600
+ExecStartPre=-/usr/bin/docker rm mysql.service
+# fix permissions on the mounted filesystems
+ExecStart=/usr/bin/docker run \
+  --rm --name mysql.service -h mysql \
+  -p 3306:3306 \
+  -e MYSQL_ROOT_PASSWORD=secret \
+  -v /scripts/mysql-fix.sh:/mysql-fix.sh \
+  -v /data/mysql:/var/lib/mysql \
+  -v mysql:5.6 /mysql-fix.sh
+ExecStop=/usr/bin/docker stop mysql.service
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
